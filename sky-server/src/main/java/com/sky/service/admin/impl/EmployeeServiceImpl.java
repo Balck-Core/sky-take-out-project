@@ -12,6 +12,7 @@ import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.dto.PasswordEditDTO;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
+import com.sky.exception.EmployeeNameExistException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.admin.EmployeeMapper;
 import com.sky.pojo.Employee;
@@ -68,6 +69,13 @@ public class EmployeeServiceImpl  implements EmployeeService {
 
     @Override
     public void save(EmployeeDTO employeeDTO) {
+        //判断用户名是否存在
+        Employee dbEmployee = employeeMapper.getByUsername(employeeDTO.getUsername());
+        if(dbEmployee!=null){
+            throw new EmployeeNameExistException("当前昵称太火了(*^_^*)，请换一个吧");
+        }
+
+
         Employee employee = new Employee();
 
         //对象属性拷贝
@@ -85,11 +93,51 @@ public class EmployeeServiceImpl  implements EmployeeService {
         employee.setUpdateTime(LocalDateTime.now());
 
         //设置当前记录创建人的id和修改人的id
-        employee.setCreateUser(10L);//后期修改
-        employee.setUpdateUser(10L);
+        employee.setCreateUser(BaseContext.getCurrentId());//后期修改
+        employee.setUpdateUser(BaseContext.getCurrentId());
 
         employeeMapper.insert(employee);//后续步骤定义
     }
 
+    /**
+     *
+     * 分页查询
+     */
+    @Override
+    public PageResult pageQuery(EmployeePageQueryDTO employeePageQueryDTO) {
+        //从pojo中获取分页查询第1页的配置
+        PageHelper.startPage(employeePageQueryDTO.getPage(),employeePageQueryDTO.getPageSize());
+        //第1页的数据
+        Page page1 =  employeeMapper.pageQuery(employeePageQueryDTO);
 
+        return new PageResult(page1.getTotal(),page1.getResult());
+    }
+
+    /*
+    * 启用禁用员工账号
+    *
+    * */
+    @Override
+    public void EnableDisableEmployees(Integer status,Long id){
+        employeeMapper.EnableDisableEmployees(status,id);
+    }
+
+    /*
+    * 根据id查询(回显)
+    *
+    * */
+    public Employee getByid(Long id){
+        Employee employee = employeeMapper.getByid(id);
+        employee.setPassword("++++");
+        return employee;
+    }
+
+    /*编辑员工信息
+    *
+    * */
+    public void update(Employee employee){
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(BaseContext.getCurrentId());
+        employeeMapper.update(employee);
+    }
 }

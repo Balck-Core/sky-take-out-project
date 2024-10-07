@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
@@ -72,6 +73,12 @@ public class EmployeeController {
         return Result.success();
     }
 
+
+    /*
+    * 新增员工
+    *
+    *
+    * */
     @PostMapping
     @ApiOperation("新增员工")
     public Result save(@RequestBody EmployeeDTO employeeDTO){
@@ -79,6 +86,48 @@ public class EmployeeController {
         return Result.success();
     }
 
+    /*
+    * 分页查询员工
+    *
+    *
+    * */
+    @GetMapping("/page")
+    @ApiOperation("员工列表分页查询")
+    public Result page(EmployeePageQueryDTO employeePageQueryDTO){
+        PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
+        return Result.success(pageResult);
+    }
 
+    /**
+     * 穷用禁用员工账号
+     *
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("启用禁用员工账号")
+    public Result EnableDisableEmployees(@PathVariable Integer status,Long id){
+        employeeService.EnableDisableEmployees(status,id);
+        return Result.success();
+    }
 
+    /*
+    * 根据id查询(编辑用的回显)
+    *
+    * */
+    @GetMapping("/{id}")
+    @ApiOperation("根据id查询(编辑用的回显)")
+    public Result<Employee> getByid(@PathVariable Long id) {
+        Employee employee = employeeService.getByid(id);
+        return Result.success(employee);
+    }
+
+    /*
+    * 编辑员工信息
+    *
+    * */
+    @PutMapping
+    @ApiOperation("编辑1员工信息")
+    public Result update(@RequestBody Employee employee){
+        employeeService.update(employee);
+        return Result.success();
+    }
 }
